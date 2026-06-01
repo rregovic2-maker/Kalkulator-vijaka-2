@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Kalkulator vijaka PRO+</title>
+
+<style>
+body { font-family:Arial; max-width:650px; margin:auto; padding:20px; }
+input,select,button { width:100%; padding:8px; margin:5px 0; }
+h2 { text-align:center; }
+.box { background:#f2f2f2; padding:10px; margin-top:10px; }
+</style>
+</head>
+
+<body>
+
+<h2>KALKULATOR VIJAKA - INDUSTRIJA</h2>
+
+<label>Promjer (M)</label>
+<input id="d" type="number" value="20">
+
+<label>Dužina (mm)</label>
+<input id="L" type="number" value="100">
+
+<label>Klasa</label>
+<select id="klasa">
+<option>4.6</option>
+<option>5.6</option>
+<option selected>8.8</option>
+<option>10.9</option>
+<option>12.9</option>
+</select>
+
+<label>Količina</label>
+<input id="k" value="100">
+
+<button onclick="calc()">IZRAČUNAJ</button>
+
+<div class="box" id="rez"></div>
+
+<script>
+
+// DIN masa
+const DIN = {
+20:{80:0.256,100:0.304,120:0.352},
+24:{80:0.384,100:0.453,120:0.522}
+};
+
+// definicija operacija
+const OPERACIJE = [
+  {naziv:"Rezanje", eurh:25, norm:100},
+  {naziv:"Kirnanje", eurh:20, norm:100},
+  {naziv:"Kovanje", eurh:35, norm:60},
+  {naziv:"Obrada glave", eurh:25, norm:100},
+  {naziv:"Tokarenje promjera", eurh:30, norm:120},
+  {naziv:"Valjanje navoja", eurh:25, norm:200}
+];
+
+function masa(d,L){
+ if(DIN[d] && DIN[d][L]) return DIN[d][L];
+
+ let vol=Math.PI*Math.pow(d/2000,2)*(L/1000);
+ return vol*7850*1.1;
+}
+
+function calc(){
+
+ let d=+document.getElementById("d").value;
+ let L=+document.getElementById("L").value;
+ let k=+document.getElementById("k").value;
+ let klasa=document.getElementById("klasa").value;
+
+ let t = masa(d,L);
+
+ let html = "";
+
+ let ukupnoOperacije = 0;
+
+ html += "<b>OPERACIJE:</b><br><br>";
+
+ OPERACIJE.forEach(op => {
+    let cijenaKom = op.eurh / op.norm;
+
+    ukupnoOperacije += cijenaKom;
+
+    html += `
+    ${op.naziv}<br>
+    - €/h: ${op.eurh}<br>
+    - kom/h: ${op.norm}<br>
+    - €/kom: ${cijenaKom.toFixed(3)}<br><br>
+    `;
+ });
+
+// termička
+let termicka = 0;
+if(!(klasa=="4.6" || klasa=="5.6")){
+  termicka = t * 1.5;
+  html += `Termička obrada<br>- €/kg: 1.5<br>- €/kom: ${termicka.toFixed(3)}<br><br>`;
+}
+
+// materijal
+let mat = t * 1.6;
+
+let cijenaKom = mat + ukupnoOperacije + termicka;
+let ukupno = cijenaKom * k;
+
+html += "<hr>";
+html += `
+<b>REZULTAT:</b><br>
+Težina: ${t.toFixed(3)} kg<br>
+Materijal: ${mat.toFixed(3)} €<br>
+Operacije: ${ukupnoOperacije.toFixed(3)} €<br>
+Cijena/kom: ${cijenaKom.toFixed(3)} €<br>
+<b>Ukupno (${k} kom): ${ukupno.toFixed(2)} €</b>
+`;
+
+document.getElementById("rez").innerHTML = html;
+
+}
+
+</script>
+
+</body>
+</html>
